@@ -5,6 +5,10 @@ const path = require('path')
 
 module.exports = {
     entry: path.resolve(__dirname, '../src/index.ts'),
+    experiments: {
+        asyncWebAssembly: true,
+        syncWebAssembly: true
+      },
     output:
     {
         hashFunction: 'xxhash64',
@@ -26,6 +30,12 @@ module.exports = {
             three: path.resolve('./node_modules/three'),
         },
         extensions: ['.tsx', '.ts', '.js'],
+        fallback: {
+            // 👇️👇️👇️ add this 👇️👇️👇️
+            "fs": false,
+            "os": false,
+            "path": false,
+          }
     },
     module: {
         rules: [
@@ -34,11 +44,10 @@ module.exports = {
                 test: /\.(html)$/,
                 use: ['html-loader'],
             },
-            {
-                test: /\.ts?$/,
-                use: 'ts-loader',
-                exclude: /node_modules/,
-            },
+            // {
+            //     test: /\.(wasm)$/,
+            //     use: ['wasm-loader'],
+            // },
             // JS
             {
                 test: /\.tsx$/,

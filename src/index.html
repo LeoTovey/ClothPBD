@@ -12,7 +12,14 @@
 
 	<div id="container"></div>
 
-
 </body>
+<script type="text/javascript" src="./PBD.js"></script>
+<script>
+	Module.onRuntimeInitialized = function () {
+		console.log(Module);
+		console.log(Module);
+	};
+	const PBD = Module;
+</script>
 
 </html>
