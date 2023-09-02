@@ -1,7 +1,7 @@
 
 
 # Template
-<https://leotovey.github.io/three-js-template/>
+<https://leotovey.github.io/ClothPBD/>
 ## Install
 This project uses [node](http://nodejs.org) and [npm](https://npmjs.com). Go check them out if you don't have them locally installed.
 
