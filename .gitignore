@@ -4,3 +4,5 @@ package-lock.json
 *.psd
 .vscode
 public/
+wasm/build
+wasm/.idea

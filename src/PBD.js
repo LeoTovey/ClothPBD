@@ -1,3 +1,10 @@
+
+var Module = (() => {
+  var _scriptDir = import.meta.url;
+  
+  return (
+async function(moduleArg = {}) {
+
 // include: shell.js
 // The Module object: Our interface to the outside world. We import
 // and export values on it. There are various ways Module can be used:
@@ -12,7 +19,14 @@
 // after the generated code, you will need to define   var Module = {};
 // before the code. Then that object will be used in the code, and you
 // can continue to use Module afterwards as well.
-var Module = typeof Module != 'undefined' ? Module : {};
+var Module = moduleArg;
+
+// Set up the promise that indicates the Module is initialized
+var readyPromiseResolve, readyPromiseReject;
+Module['ready'] = new Promise((resolve, reject) => {
+  readyPromiseResolve = resolve;
+  readyPromiseReject = reject;
+});
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
@@ -63,6 +77,9 @@ if (ENVIRONMENT_IS_NODE) {
   // the require()` function.  This is only necessary for multi-environment
   // builds, `-sENVIRONMENT=node` emits a static import declaration instead.
   // TODO: Swap all `require()`'s with `import()`'s?
+  const { createRequire } = await require('module');
+  /** @suppress{duplicate} */
+  var require = createRequire(import.meta.url);
   // These modules will usually be used on Node.js. Load them eagerly to avoid
   // the complexity of lazy-loading.
   var fs = require('fs');
@@ -71,7 +88,10 @@ if (ENVIRONMENT_IS_NODE) {
   if (ENVIRONMENT_IS_WORKER) {
     scriptDirectory = nodePath.dirname(scriptDirectory) + '/';
   } else {
-    scriptDirectory = __dirname + '/';
+    // EXPORT_ES6 + ENVIRONMENT_IS_NODE always requires use of import.meta.url,
+    // since there's no way getting the current absolute path of the module when
+    // support for that is not available.
+    scriptDirectory = require('url').fileURLToPath(new URL('./', import.meta.url)); // includes trailing slash
   }
 
 // include: node_shell_read.js
@@ -105,16 +125,7 @@ readAsync = (filename, onload, onerror, binary = true) => {
 
   arguments_ = process.argv.slice(2);
 
-  if (typeof module != 'undefined') {
-    module['exports'] = Module;
-  }
-
-  process.on('uncaughtException', (ex) => {
-    // suppress ExitStatus exceptions from showing an error
-    if (ex !== 'unwind' && !(ex instanceof ExitStatus) && !(ex.context instanceof ExitStatus)) {
-      throw ex;
-    }
-  });
+  // MODULARIZE will export the module in the proper place outside, we don't need to export here
 
   quit_ = (status, toThrow) => {
     process.exitCode = status;
@@ -133,6 +144,11 @@ if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
     scriptDirectory = self.location.href;
   } else if (typeof document != 'undefined' && document.currentScript) { // web
     scriptDirectory = document.currentScript.src;
+  }
+  // When MODULARIZE, this JS may be executed later, after document.currentScript
+  // is gone, so we saved it, and we use it here instead of any other info.
+  if (_scriptDir) {
+    scriptDirectory = _scriptDir;
   }
   // blob urls look like blob:http://site.com/etc/etc and we cannot infer anything from them.
   // otherwise, slice off the final part of the url to find the script directory.
@@ -444,6 +460,7 @@ function abort(what) {
   /** @suppress {checkTypes} */
   var e = new WebAssembly.RuntimeError(what);
 
+  readyPromiseReject(e);
   // Throw the error whether or not MODULARIZE is set because abort is used
   // in code paths apart from instantiation where an exception is expected
   // to be thrown when abort is called.
@@ -470,10 +487,15 @@ function isFileURI(filename) {
 // include: runtime_exceptions.js
 // end include: runtime_exceptions.js
 var wasmBinaryFile;
+if (Module['locateFile']) {
   wasmBinaryFile = 'PBD.wasm';
   if (!isDataURI(wasmBinaryFile)) {
     wasmBinaryFile = locateFile(wasmBinaryFile);
   }
+} else {
+  // Use bundler-friendly `new URL(..., import.meta.url)` pattern; works in browsers too.
+  wasmBinaryFile = new URL('PBD.wasm', import.meta.url).href;
+}
 
 function getBinarySync(file) {
   if (file == wasmBinaryFile && wasmBinary) {
@@ -617,11 +639,13 @@ function createWasm() {
       return Module['instantiateWasm'](info, receiveInstance);
     } catch(e) {
       err(`Module.instantiateWasm callback failed with error: ${e}`);
-        return false;
+        // If instantiation fails, reject the module ready promise.
+        readyPromiseReject(e);
     }
   }
 
-  instantiateAsync(wasmBinary, wasmBinaryFile, info, receiveInstantiationResult);
+  // If instantiation fails, reject the module ready promise.
+  instantiateAsync(wasmBinary, wasmBinaryFile, info, receiveInstantiationResult).catch(readyPromiseReject);
   return {}; // no exports yet; we'll fill them in later
 }
 
@@ -632,6 +656,9 @@ var tempI64;
 // include: runtime_debug.js
 // end include: runtime_debug.js
 // === Body ===
+
+function array_bounds_check_error(idx,size) { throw 'Array index ' + idx + ' out of bounds: [0,' + size + ')'; }
+
 
 // end include: preamble.js
 
@@ -848,6 +875,10 @@ var tempI64;
       throw exceptionLast;
     };
 
+  var _abort = () => {
+      abort('');
+    };
+
   var _emscripten_memcpy_big = (dest, src, num) => HEAPU8.copyWithin(dest, src, src + num);
 
   var getHeapMax = () =>
@@ -970,15 +1001,6 @@ var tempI64;
       return 0;
     };
 
-  var getCFunc = (ident) => {
-      var func = Module['_' + ident]; // closure exported function
-      return func;
-    };
-  
-  var writeArrayToMemory = (array, buffer) => {
-      HEAP8.set(array, buffer);
-    };
-  
   var lengthBytesUTF8 = (str) => {
       var len = 0;
       for (var i = 0; i < str.length; ++i) {
@@ -1045,6 +1067,26 @@ var tempI64;
       heap[outIdx] = 0;
       return outIdx - startIdx;
     };
+  /** @type {function(string, boolean=, number=)} */
+  function intArrayFromString(stringy, dontAddNull, length) {
+    var len = length > 0 ? length : lengthBytesUTF8(stringy)+1;
+    var u8array = new Array(len);
+    var numBytesWritten = stringToUTF8Array(stringy, u8array, 0, u8array.length);
+    if (dontAddNull) u8array.length = numBytesWritten;
+    return u8array;
+  }
+
+
+  var getCFunc = (ident) => {
+      var func = Module['_' + ident]; // closure exported function
+      return func;
+    };
+  
+  var writeArrayToMemory = (array, buffer) => {
+      HEAP8.set(array, buffer);
+    };
+  
+  
   var stringToUTF8 = (str, outPtr, maxBytesToWrite) => {
       return stringToUTF8Array(str, HEAPU8, outPtr, maxBytesToWrite);
     };
@@ -1135,21 +1177,31 @@ var tempI64;
 var wasmImports = {
   __assert_fail: ___assert_fail,
   __cxa_throw: ___cxa_throw,
+  abort: _abort,
   emscripten_memcpy_big: _emscripten_memcpy_big,
   emscripten_resize_heap: _emscripten_resize_heap,
   fd_write: _fd_write
 };
 var wasmExports = createWasm();
 var ___wasm_call_ctors = () => (___wasm_call_ctors = wasmExports['__wasm_call_ctors'])();
-var _simple_add = Module['_simple_add'] = (a0, a1) => (_simple_add = Module['_simple_add'] = wasmExports['simple_add'])(a0, a1);
-var _test_malloc = Module['_test_malloc'] = (a0, a1) => (_test_malloc = Module['_test_malloc'] = wasmExports['test_malloc'])(a0, a1);
+var _webidl_free = Module['_webidl_free'] = (a0) => (_webidl_free = Module['_webidl_free'] = wasmExports['webidl_free'])(a0);
+var _webidl_malloc = Module['_webidl_malloc'] = (a0) => (_webidl_malloc = Module['_webidl_malloc'] = wasmExports['webidl_malloc'])(a0);
+var _emscripten_bind_VoidPtr___destroy___0 = Module['_emscripten_bind_VoidPtr___destroy___0'] = (a0) => (_emscripten_bind_VoidPtr___destroy___0 = Module['_emscripten_bind_VoidPtr___destroy___0'] = wasmExports['emscripten_bind_VoidPtr___destroy___0'])(a0);
+var _emscripten_bind_ClothSim_ClothSim_2 = Module['_emscripten_bind_ClothSim_ClothSim_2'] = (a0, a1) => (_emscripten_bind_ClothSim_ClothSim_2 = Module['_emscripten_bind_ClothSim_ClothSim_2'] = wasmExports['emscripten_bind_ClothSim_ClothSim_2'])(a0, a1);
+var _emscripten_bind_ClothSim_Step_1 = Module['_emscripten_bind_ClothSim_Step_1'] = (a0, a1) => (_emscripten_bind_ClothSim_Step_1 = Module['_emscripten_bind_ClothSim_Step_1'] = wasmExports['emscripten_bind_ClothSim_Step_1'])(a0, a1);
+var _emscripten_bind_ClothSim_GetPositionX_1 = Module['_emscripten_bind_ClothSim_GetPositionX_1'] = (a0, a1) => (_emscripten_bind_ClothSim_GetPositionX_1 = Module['_emscripten_bind_ClothSim_GetPositionX_1'] = wasmExports['emscripten_bind_ClothSim_GetPositionX_1'])(a0, a1);
+var _emscripten_bind_ClothSim_GetPositionY_1 = Module['_emscripten_bind_ClothSim_GetPositionY_1'] = (a0, a1) => (_emscripten_bind_ClothSim_GetPositionY_1 = Module['_emscripten_bind_ClothSim_GetPositionY_1'] = wasmExports['emscripten_bind_ClothSim_GetPositionY_1'])(a0, a1);
+var _emscripten_bind_ClothSim_GetPositionZ_1 = Module['_emscripten_bind_ClothSim_GetPositionZ_1'] = (a0, a1) => (_emscripten_bind_ClothSim_GetPositionZ_1 = Module['_emscripten_bind_ClothSim_GetPositionZ_1'] = wasmExports['emscripten_bind_ClothSim_GetPositionZ_1'])(a0, a1);
+var _emscripten_bind_ClothSim_SetPosition_4 = Module['_emscripten_bind_ClothSim_SetPosition_4'] = (a0, a1, a2, a3, a4) => (_emscripten_bind_ClothSim_SetPosition_4 = Module['_emscripten_bind_ClothSim_SetPosition_4'] = wasmExports['emscripten_bind_ClothSim_SetPosition_4'])(a0, a1, a2, a3, a4);
+var _emscripten_bind_ClothSim___destroy___0 = Module['_emscripten_bind_ClothSim___destroy___0'] = (a0) => (_emscripten_bind_ClothSim___destroy___0 = Module['_emscripten_bind_ClothSim___destroy___0'] = wasmExports['emscripten_bind_ClothSim___destroy___0'])(a0);
 var ___errno_location = () => (___errno_location = wasmExports['__errno_location'])();
 var stackSave = () => (stackSave = wasmExports['stackSave'])();
 var stackRestore = (a0) => (stackRestore = wasmExports['stackRestore'])(a0);
 var stackAlloc = (a0) => (stackAlloc = wasmExports['stackAlloc'])(a0);
 var ___cxa_is_pointer_type = (a0) => (___cxa_is_pointer_type = wasmExports['__cxa_is_pointer_type'])(a0);
 var dynCall_jiji = Module['dynCall_jiji'] = (a0, a1, a2, a3, a4) => (dynCall_jiji = Module['dynCall_jiji'] = wasmExports['dynCall_jiji'])(a0, a1, a2, a3, a4);
-
+var ___start_em_js = Module['___start_em_js'] = 2446;
+var ___stop_em_js = Module['___stop_em_js'] = 2544;
 
 // include: postamble.js
 // === Auto-generated postamble setup entry stuff ===
@@ -1190,6 +1242,7 @@ function run() {
 
     initRuntime();
 
+    readyPromiseResolve(Module);
     if (Module['onRuntimeInitialized']) Module['onRuntimeInitialized']();
 
     postRun();
@@ -1220,3 +1273,262 @@ run();
 
 
 // end include: postamble.js
+// include: /Users/leo/threejs/ClothPBD/wasm/glue.js
+
+// Bindings utilities
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function WrapperObject() {
+}
+WrapperObject.prototype = Object.create(WrapperObject.prototype);
+WrapperObject.prototype.constructor = WrapperObject;
+WrapperObject.prototype.__class__ = WrapperObject;
+WrapperObject.__cache__ = {};
+Module['WrapperObject'] = WrapperObject;
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant)
+    @param {*=} __class__ */
+function getCache(__class__) {
+  return (__class__ || WrapperObject).__cache__;
+}
+Module['getCache'] = getCache;
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant)
+    @param {*=} __class__ */
+function wrapPointer(ptr, __class__) {
+  var cache = getCache(__class__);
+  var ret = cache[ptr];
+  if (ret) return ret;
+  ret = Object.create((__class__ || WrapperObject).prototype);
+  ret.ptr = ptr;
+  return cache[ptr] = ret;
+}
+Module['wrapPointer'] = wrapPointer;
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function castObject(obj, __class__) {
+  return wrapPointer(obj.ptr, __class__);
+}
+Module['castObject'] = castObject;
+
+Module['NULL'] = wrapPointer(0);
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function destroy(obj) {
+  if (!obj['__destroy__']) throw 'Error: Cannot destroy object. (Did you create it yourself?)';
+  obj['__destroy__']();
+  // Remove from cache, so the object can be GC'd and refs added onto it released
+  delete getCache(obj.__class__)[obj.ptr];
+}
+Module['destroy'] = destroy;
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function compare(obj1, obj2) {
+  return obj1.ptr === obj2.ptr;
+}
+Module['compare'] = compare;
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function getPointer(obj) {
+  return obj.ptr;
+}
+Module['getPointer'] = getPointer;
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function getClass(obj) {
+  return obj.__class__;
+}
+Module['getClass'] = getClass;
+
+// Converts big (string or array) values into a C-style storage, in temporary space
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+var ensureCache = {
+  buffer: 0,  // the main buffer of temporary storage
+  size: 0,   // the size of buffer
+  pos: 0,    // the next free offset in buffer
+  temps: [], // extra allocations
+  needed: 0, // the total size we need next time
+
+  prepare() {
+    if (ensureCache.needed) {
+      // clear the temps
+      for (var i = 0; i < ensureCache.temps.length; i++) {
+        Module['_webidl_free'](ensureCache.temps[i]);
+      }
+      ensureCache.temps.length = 0;
+      // prepare to allocate a bigger buffer
+      Module['_webidl_free'](ensureCache.buffer);
+      ensureCache.buffer = 0;
+      ensureCache.size += ensureCache.needed;
+      // clean up
+      ensureCache.needed = 0;
+    }
+    if (!ensureCache.buffer) { // happens first time, or when we need to grow
+      ensureCache.size += 128; // heuristic, avoid many small grow events
+      ensureCache.buffer = Module['_webidl_malloc'](ensureCache.size);
+      assert(ensureCache.buffer);
+    }
+    ensureCache.pos = 0;
+  },
+  alloc(array, view) {
+    assert(ensureCache.buffer);
+    var bytes = view.BYTES_PER_ELEMENT;
+    var len = array.length * bytes;
+    len = (len + 7) & -8; // keep things aligned to 8 byte boundaries
+    var ret;
+    if (ensureCache.pos + len >= ensureCache.size) {
+      // we failed to allocate in the buffer, ensureCache time around :(
+      assert(len > 0); // null terminator, at least
+      ensureCache.needed += len;
+      ret = Module['_webidl_malloc'](len);
+      ensureCache.temps.push(ret);
+    } else {
+      // we can allocate in the buffer
+      ret = ensureCache.buffer + ensureCache.pos;
+      ensureCache.pos += len;
+    }
+    return ret;
+  },
+  copy(array, view, offset) {
+    offset >>>= 0;
+    var bytes = view.BYTES_PER_ELEMENT;
+    switch (bytes) {
+      case 2: offset >>>= 1; break;
+      case 4: offset >>>= 2; break;
+      case 8: offset >>>= 3; break;
+    }
+    for (var i = 0; i < array.length; i++) {
+      view[offset + i] = array[i];
+    }
+  },
+};
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function ensureString(value) {
+  if (typeof value === 'string') {
+    var intArray = intArrayFromString(value);
+    var offset = ensureCache.alloc(intArray, HEAP8);
+    ensureCache.copy(intArray, HEAP8, offset);
+    return offset;
+  }
+  return value;
+}
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function ensureInt8(value) {
+  if (typeof value === 'object') {
+    var offset = ensureCache.alloc(value, HEAP8);
+    ensureCache.copy(value, HEAP8, offset);
+    return offset;
+  }
+  return value;
+}
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function ensureInt16(value) {
+  if (typeof value === 'object') {
+    var offset = ensureCache.alloc(value, HEAP16);
+    ensureCache.copy(value, HEAP16, offset);
+    return offset;
+  }
+  return value;
+}
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function ensureInt32(value) {
+  if (typeof value === 'object') {
+    var offset = ensureCache.alloc(value, HEAP32);
+    ensureCache.copy(value, HEAP32, offset);
+    return offset;
+  }
+  return value;
+}
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function ensureFloat32(value) {
+  if (typeof value === 'object') {
+    var offset = ensureCache.alloc(value, HEAPF32);
+    ensureCache.copy(value, HEAPF32, offset);
+    return offset;
+  }
+  return value;
+}
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function ensureFloat64(value) {
+  if (typeof value === 'object') {
+    var offset = ensureCache.alloc(value, HEAPF64);
+    ensureCache.copy(value, HEAPF64, offset);
+    return offset;
+  }
+  return value;
+}
+
+
+// VoidPtr
+/** @suppress {undefinedVars, duplicate} @this{Object} */function VoidPtr() { throw "cannot construct a VoidPtr, no constructor in IDL" }
+VoidPtr.prototype = Object.create(WrapperObject.prototype);
+VoidPtr.prototype.constructor = VoidPtr;
+VoidPtr.prototype.__class__ = VoidPtr;
+VoidPtr.__cache__ = {};
+Module['VoidPtr'] = VoidPtr;
+
+  VoidPtr.prototype['__destroy__'] = VoidPtr.prototype.__destroy__ = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  var self = this.ptr;
+  _emscripten_bind_VoidPtr___destroy___0(self);
+};
+// ClothSim
+/** @suppress {undefinedVars, duplicate} @this{Object} */function ClothSim(x_segments, y_segments) {
+  if (x_segments && typeof x_segments === 'object') x_segments = x_segments.ptr;
+  if (y_segments && typeof y_segments === 'object') y_segments = y_segments.ptr;
+  this.ptr = _emscripten_bind_ClothSim_ClothSim_2(x_segments, y_segments);
+  getCache(ClothSim)[this.ptr] = this;
+};;
+ClothSim.prototype = Object.create(WrapperObject.prototype);
+ClothSim.prototype.constructor = ClothSim;
+ClothSim.prototype.__class__ = ClothSim;
+ClothSim.__cache__ = {};
+Module['ClothSim'] = ClothSim;
+
+ClothSim.prototype['Step'] = ClothSim.prototype.Step = /** @suppress {undefinedVars, duplicate} @this{Object} */function(dt) {
+  var self = this.ptr;
+  if (dt && typeof dt === 'object') dt = dt.ptr;
+  return _emscripten_bind_ClothSim_Step_1(self, dt);
+};;
+
+ClothSim.prototype['GetPositionX'] = ClothSim.prototype.GetPositionX = /** @suppress {undefinedVars, duplicate} @this{Object} */function(index) {
+  var self = this.ptr;
+  if (index && typeof index === 'object') index = index.ptr;
+  return _emscripten_bind_ClothSim_GetPositionX_1(self, index);
+};;
+
+ClothSim.prototype['GetPositionY'] = ClothSim.prototype.GetPositionY = /** @suppress {undefinedVars, duplicate} @this{Object} */function(index) {
+  var self = this.ptr;
+  if (index && typeof index === 'object') index = index.ptr;
+  return _emscripten_bind_ClothSim_GetPositionY_1(self, index);
+};;
+
+ClothSim.prototype['GetPositionZ'] = ClothSim.prototype.GetPositionZ = /** @suppress {undefinedVars, duplicate} @this{Object} */function(index) {
+  var self = this.ptr;
+  if (index && typeof index === 'object') index = index.ptr;
+  return _emscripten_bind_ClothSim_GetPositionZ_1(self, index);
+};;
+
+ClothSim.prototype['SetPosition'] = ClothSim.prototype.SetPosition = /** @suppress {undefinedVars, duplicate} @this{Object} */function(index, x, y, z) {
+  var self = this.ptr;
+  if (index && typeof index === 'object') index = index.ptr;
+  if (x && typeof x === 'object') x = x.ptr;
+  if (y && typeof y === 'object') y = y.ptr;
+  if (z && typeof z === 'object') z = z.ptr;
+  _emscripten_bind_ClothSim_SetPosition_4(self, index, x, y, z);
+};;
+
+  ClothSim.prototype['__destroy__'] = ClothSim.prototype.__destroy__ = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  var self = this.ptr;
+  _emscripten_bind_ClothSim___destroy___0(self);
+};
+// end include: /Users/leo/threejs/ClothPBD/wasm/glue.js
+
+
+  return moduleArg.ready
+}
+
+);
+})();
+export default Module;

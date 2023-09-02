@@ -1,0 +1,6 @@
+[submodule "wasm/deps/emscripten"]
+	path = wasm/deps/emscripten
+	url = https://github.com/emscripten-core/emscripten.git
+[submodule "wasm/deps/eigen"]
+	path = wasm/deps/eigen
+	url = https://gitlab.com/libeigen/eigen.git

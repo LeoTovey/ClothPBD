@@ -3,17 +3,19 @@ project(PBD)
 
 
 include_directories(deps/eigen)
-
+include_directories(./)
 file(GLOB HEADERS "${CMAKE_CURRENT_LIST_DIR}/*.h")
 file(GLOB SOURCES "${CMAKE_CURRENT_LIST_DIR}/*.cpp")
 
-set(EMSCRIPTENOPTIONS "SHELL:-s ALLOW_MEMORY_GROWTH=1 -s EXPORTED_RUNTIME_METHODS=['ccall','cwrap'] --no-entry")
+set(EMSCRIPTENOPTIONS "SHELL:--post-js /Users/leo/threejs/ClothPBD/wasm/glue.js -s ALLOW_MEMORY_GROWTH=1 
+-s EXPORTED_RUNTIME_METHODS=['ccall','cwrap']
+-s EXPORT_ES6=1 -s MODULARIZE=1 -s --no-entry")
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_FLAGS_RELEASE "-O1")
 set(CMAKE_CXX_STANDARD 17)
 
 
-add_executable(PBD ${SOURCES})
+add_executable(PBD cloth_simulator.cpp cloth_simulator_wrapper.cpp )
 
 target_link_options(PBD PRIVATE ${EMSCRIPTENOPTIONS})
 # set(CMAKE_EXECUTABLE_SUFFIX ".wasm")

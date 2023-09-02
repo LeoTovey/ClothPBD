@@ -1,0 +1,9 @@
+interface ClothSim
+{
+  void ClothSim(long x_segments, long y_segments);
+  float Step(float dt);
+  float GetPositionX(long index);
+  float GetPositionY(long index);
+  float GetPositionZ(long index);
+  void SetPosition(long index, float x, float y, float z);
+};

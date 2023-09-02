@@ -6,13 +6,82 @@ import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import Module from './PBD.js';
 
+// index.ts
+// declare var PBD;
+// use PBD as you wish
+
+
+// import('./PBD.js').then((Module) => {
+
+// 	console.log();
+// }).catch((error) => {
+// 	console.error('Error importing module:', error);
+// });
+// let PBD: any;
 
 
 
-let PBD;
+// import Module from './PBD.js'
+// let PBD = Module();
+// console.log(PBD);
+// var f = PBD.Foo();
+
+
+// async function loadModule() {
+// 	let PBD = Module();
+// 	console.log(PBD);
+// 	var f = PBD.Foo();
+// 	// 这里可以继续执行后续的代码
+// }
+
+// loadModule();
+// declare global {
+// 	interface Window {
+// 		main: () => void; // 声明window对象上有一个main函数
+// 	}
+// }
+
+
+let PBDM, f;
+// const Module = require('./PBD.js');
+// console.log(PBD);
+// var PBD;
+// window.main = function main() 
+// {
+// 	Module().then(function (mymod) 
+// 	{
+// 		PBD = mymod;
+// 		console.log("123");
+// 		console.log(mymod);
+// 	});
+// }
+
+
+Module().then(function (PBD) 
+{
+	console.log(PBD);
+	PBDM = PBD;
+	f = new PBD.Foo();
+	console.log(f);
+});
+
+
+
+
+// import Module from './PBD.js'
+// const mymod = Module();
+// //var f = new mymod.Foo();
+// console.log(mymod.Foo());
+
+
+
 let scene, renderer, camera, stats, container;
-let cloth, PBDCloth;
-var clock = new THREE.Clock();
+let cloth;
+const controls =
+{
+	enabledShadow: true,
+}
+
 init();
 animate();
 
@@ -56,7 +125,7 @@ function init() {
 	window.addEventListener('resize', onWindowResize);
 
 	// stats
-	stats = new Stats();
+	stats = Stats();
 	container.appendChild(stats.dom);
 	container.appendChild(renderer.domElement);
 
@@ -113,11 +182,7 @@ function init() {
 	const clothNumSegmentsZ = clothWidth * 5;
 	const clothNumSegmentsY = clothHeight * 5;
 	const clothPos = new THREE.Vector3(0, -1, 0);
-	const clothMaterial = new THREE.MeshStandardMaterial({ 
-		color: 0xFFFFFF, 
-		side: THREE.DoubleSide,
-		wireframe: true,
-	 });
+	const clothMaterial = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide });
 	const clothGeometry = new THREE.PlaneGeometry(clothWidth, clothHeight, clothNumSegmentsZ, clothNumSegmentsY);
 	cloth = new THREE.Mesh(clothGeometry, clothMaterial);
 
@@ -129,59 +194,18 @@ function init() {
 	cloth.position.set(0.0, 2.0, 0.0);
 	scene.add(cloth);
 
-	Module().then(function (module) 
-	{
-		PBD = module;
-		PBDCloth = new PBD.ClothSim(clothNumSegmentsZ, clothNumSegmentsY);
-		console.log(PBDCloth);
-		const clothPositions = cloth.geometry.attributes.position.array;
-		const numVerts = clothPositions.length / 3;
+	new THREE.TextureLoader().load('./images.jpg', function (texture) {
 
-		let indexFloat = 0;
-		for (let i = 0; i < numVerts; i++, indexFloat+=3) 
-		{
-			PBDCloth.SetPosition(i, 
-				clothPositions[indexFloat],
-				clothPositions[indexFloat + 1],
-				clothPositions[indexFloat + 2]);
-		}
-		cloth.geometry.computeVertexNormals();
-		cloth.geometry.attributes.position.needsUpdate = true;
-		cloth.geometry.attributes.normal.needsUpdate = true;
-	});
-
-
-	const texture = new THREE.TextureLoader().load('./images.jpg', function (texture) 
-	{
 		texture.colorSpace = THREE.SRGBColorSpace;
 		texture.wrapS = THREE.RepeatWrapping;
 		texture.wrapT = THREE.RepeatWrapping;
 		texture.repeat.set(1, 1);
-	});
-	const gui = new GUI();
-	gui.add(clothMaterial, 'wireframe').onChange(function(value)
-	{
-		if (!value)
-		{
-			cloth.material.map = texture;
-			cloth.material.needsUpdate = true;
-		}
-		else
-		{
-			cloth.material.map = null;
-			cloth.material.needsUpdate = true;
-		}
+		cloth.material.map = texture;
+		cloth.material.needsUpdate = true;
+		create_ui();
 
 	});
-	gui.addColor(clothMaterial, 'color');
-	gui.add(renderer.shadowMap, 'enabled');
 
-
-
-	//gui.add(material, 'metalness', 0, 1);
-	//gui.add(renderer, 'toneMappingExposure', 0, 2).name('exposure');
-
-	//create_ui();
 	// 监听鼠标事件
 	document.addEventListener('mousedown', onMouseDown);
 	document.addEventListener('mouseup', onMouseUp);
@@ -194,43 +218,29 @@ function onWindowResize() {
 	renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
+function create_ui() {
+	const panel = new GUI({ width: 310 });
+	const shadowCtrl = panel.add(controls, 'enabledShadow').name('Enable Shadow')
+	shadowCtrl.onChange(
+		function () {
 
-
-
-function animate() 
-{
-	requestAnimationFrame(animate);
-	var deltaTime = clock.getDelta();
-
-	//cloth.rotation.x += 0.01;
-
-	renderer.render(scene, camera);
-	if (PBDCloth)
-	{
-		//console.log(PBDCloth.Step(deltaTime));
-		//
-		updateCloth();
-		console.log(PBDCloth.Step());
-	}
-	stats.update();
+			console.log(f);
+			console.log(f.getVal());
+			console.log(PBDM);
+			
+			renderer.shadowMap.enabled = controls.enabledShadow;
+		}
+	);
 }
 
-function updateCloth()
-{
-	const clothPositions = cloth.geometry.attributes.position.array;
-	const numVerts = clothPositions.length / 3;
 
-	let indexFloat = 0;
-	for (let i = 0; i < numVerts; i++) 
-	{
-		clothPositions[indexFloat++] = PBDCloth.GetPositionX(i, 0);
-		clothPositions[indexFloat++] = PBDCloth.GetPositionY(i, 1);
-		clothPositions[indexFloat++] = PBDCloth.GetPositionZ(i, 2);
+function animate() {
+	requestAnimationFrame(animate);
 
-	}
-	cloth.geometry.computeVertexNormals();
-	cloth.geometry.attributes.position.needsUpdate = true;
-	cloth.geometry.attributes.normal.needsUpdate = true;
+	cloth.rotation.x += 0.01;
+
+	renderer.render(scene, camera);
+	stats.update();
 }
 
 function onMouseDown() {

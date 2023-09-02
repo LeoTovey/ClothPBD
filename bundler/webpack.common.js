@@ -2,7 +2,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCSSExtractPlugin = require('mini-css-extract-plugin');
 const path = require('path')
-
+const webpack = require('webpack')
 module.exports = {
     entry: path.resolve(__dirname, '../src/index.ts'),
     experiments: {
@@ -23,11 +23,12 @@ module.exports = {
             template: path.resolve(__dirname, '../src/index.html'),
             minify: true
         }),
-        new MiniCSSExtractPlugin(),
+        new MiniCSSExtractPlugin()
     ],
     resolve: {
         alias: {
             three: path.resolve('./node_modules/three'),
+            module: require.resolve('module')
         },
         extensions: ['.tsx', '.ts', '.js'],
         fallback: {
@@ -35,6 +36,11 @@ module.exports = {
             "fs": false,
             "os": false,
             "path": false,
+            "util":false,
+            "assert": false,
+             "tty": false,
+            "stream": false,
+            "buffer": false,
           }
     },
     module: {
