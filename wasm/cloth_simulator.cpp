@@ -19,7 +19,7 @@ ClothSim::ClothSim(float width, float height, int x_segments, int y_segments)
 void ClothSim::Step(float delta_time)
 {
     int steps = int(delta_time / dt);
-    static Vector3f move = Vector3f { 0, 0, 0.00001 };
+    static Vector3f move = Vector3f { 0, 0, 0.0005 };
     for (size_t i = 0; i < steps; i++)
     {
         SubStep(dt);
