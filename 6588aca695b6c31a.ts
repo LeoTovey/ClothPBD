@@ -14,11 +14,11 @@ let scene, renderer, camera, stats, container;
 let cloth, PBDCloth, dirLight, sphere;
 var clock = new THREE.Clock();
 
-const dt = 1e-5;
-const k = 4.0;
+// const dt = 1e-3;
+const k = 8.0;
 const damping = 0.2;
 const mass = 1.0;
-const gravity = 0.0098;
+const gravity = 0.01;
 const sphere_radius = 0.4;
 
 init();
@@ -153,7 +153,7 @@ function init() {
 		PBDCloth.damping = damping;
 		PBDCloth.node_mass = mass;
 		PBDCloth.gravity = gravity;
-		PBDCloth.dt = dt;
+		// PBDCloth.dt = dt;
 		PBDCloth.UpdateSphere(sphere.position.x,
 			sphere.position.y,
 			sphere.position.z,
@@ -279,6 +279,7 @@ function animate()
 		//console.log(PBDCloth.Step(deltaTime));
 		//
 		updateCloth();
+		PBDCloth.dt = deltaTime / 10.0;
 		PBDCloth.Step(deltaTime);
 		PBDCloth.UpdateSphere(
 			sphere.position.x,
