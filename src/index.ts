@@ -11,8 +11,16 @@ import Module from './PBD.js';
 
 let PBD;
 let scene, renderer, camera, stats, container;
-let cloth, PBDCloth;
+let cloth, PBDCloth, dirLight, sphere;
 var clock = new THREE.Clock();
+
+const dt = 1e-5;
+const k = 4.0;
+const damping = 0.2;
+const mass = 1.0;
+const gravity = 0.0098;
+const sphere_radius = 0.4;
+
 init();
 animate();
 
@@ -38,19 +46,27 @@ function init() {
 	camera.lookAt(0, 2, 0);
 
 	// light
-	const hemiLight = new THREE.HemisphereLight(0xffffff, 0x8d8d8d, 3);
+	const hemiLight = 
+	new THREE.HemisphereLight(0xffffff, 0x8d8d8d, 3);
 	hemiLight.position.set(0, 20, 0);
 	scene.add(hemiLight);
 
-	const dirLight = new THREE.DirectionalLight(0xffffff, 3);
+	dirLight = new THREE.DirectionalLight(0xffffff, 2);
 	dirLight.position.set(0, 20, 10);
 	dirLight.castShadow = true;
-	// dirLight.shadow.camera.top = 2;
-	// dirLight.shadow.camera.bottom = - 2;
-	// dirLight.shadow.camera.left = - 2;
-	// dirLight.shadow.camera.right = 2;
-	// dirLight.shadow.camera.near = 0.1;
-	// dirLight.shadow.camera.far = 40;
+	const d = 10;
+	dirLight.shadow.camera.left = - d;
+	dirLight.shadow.camera.right = d;
+	dirLight.shadow.camera.top = d;
+	dirLight.shadow.camera.bottom = - d;
+
+	dirLight.shadow.camera.near = 2;
+	dirLight.shadow.camera.far = 50;
+
+	dirLight.shadow.mapSize.x = 1024;
+	dirLight.shadow.mapSize.y = 1024;
+
+	dirLight.shadow.bias = - 0.003;
 	scene.add(dirLight);
 
 	window.addEventListener('resize', onWindowResize);
@@ -95,14 +111,12 @@ function init() {
 	// 	thetaLength ?: number,
 
 	// interactive sphere
-	const sphereGeometry = new THREE.SphereGeometry(0.4);
+	const sphereGeometry = new THREE.SphereGeometry(sphere_radius - 0.1);
 	const sphereMaterial = new THREE.MeshStandardMaterial({ color: 0xFFFFFF });
 	sphereMaterial.roughness = 1.0;
 	console.log(sphereMaterial);
-	const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-
-
-
+	sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+	sphere.castShadow = true;
 	sphere.position.set(0, 1, 1);
 	scene.add(sphere);
 
@@ -116,12 +130,13 @@ function init() {
 	const clothMaterial = new THREE.MeshStandardMaterial({ 
 		color: 0xFFFFFF, 
 		side: THREE.DoubleSide,
-		wireframe: true,
+		wireframe: false,
 	 });
 	const clothGeometry = new THREE.PlaneGeometry(clothWidth, clothHeight, clothNumSegmentsZ, clothNumSegmentsY);
 	cloth = new THREE.Mesh(clothGeometry, clothMaterial);
 
-	clothGeometry.rotateX(Math.PI * 0.5);
+	//clothGeometry.rotateX(Math.PI * 0.5);
+	clothGeometry.rotateY(Math.PI);
 	//clothGeometry.translate(0, 10.0, 0.0);
 	//clothGeometry.translate(clothPos.x, clothPos.y + clothHeight * 0.5, clothPos.z - clothWidth * 0.5);
 	cloth.castShadow = true;
@@ -132,18 +147,31 @@ function init() {
 	Module().then(function (module) 
 	{
 		PBD = module;
-		PBDCloth = new PBD.ClothSim(clothNumSegmentsZ, clothNumSegmentsY);
+		PBDCloth = new PBD.ClothSim(clothWidth, clothHeight, clothNumSegmentsZ, clothNumSegmentsY);
 		console.log(PBDCloth);
+		PBDCloth.k = k;
+		PBDCloth.damping = damping;
+		PBDCloth.node_mass = mass;
+		PBDCloth.gravity = gravity;
+		PBDCloth.dt = dt;
+		PBDCloth.UpdateSphere(sphere.position.x,
+			sphere.position.y,
+			sphere.position.z,
+			sphere_radius
+			);
 		const clothPositions = cloth.geometry.attributes.position.array;
 		const numVerts = clothPositions.length / 3;
+		var worldMatrix = cloth.worldMatrix;
 
 		let indexFloat = 0;
 		for (let i = 0; i < numVerts; i++, indexFloat+=3) 
 		{
-			PBDCloth.SetPosition(i, 
+			var positionAttribute = new THREE.Vector3(
 				clothPositions[indexFloat],
 				clothPositions[indexFloat + 1],
 				clothPositions[indexFloat + 2]);
+			var x = (cloth.localToWorld(positionAttribute)).toArray();
+			PBDCloth.SetPosition(i, x[0], x[1], x[2]);
 		}
 		cloth.geometry.computeVertexNormals();
 		cloth.geometry.attributes.position.needsUpdate = true;
@@ -151,30 +179,70 @@ function init() {
 	});
 
 
-	const texture = new THREE.TextureLoader().load('./images.jpg', function (texture) 
+	const albedo = new THREE.TextureLoader().load('./02Color.png', function (texture) 
 	{
 		texture.colorSpace = THREE.SRGBColorSpace;
 		texture.wrapS = THREE.RepeatWrapping;
 		texture.wrapT = THREE.RepeatWrapping;
 		texture.repeat.set(1, 1);
 	});
-	const gui = new GUI();
-	gui.add(clothMaterial, 'wireframe').onChange(function(value)
-	{
-		if (!value)
-		{
-			cloth.material.map = texture;
-			cloth.material.needsUpdate = true;
-		}
-		else
-		{
-			cloth.material.map = null;
-			cloth.material.needsUpdate = true;
-		}
-
+	const normal = new THREE.TextureLoader().load('./01Normal.png', function (texture) {
+		texture.colorSpace = THREE.SRGBColorSpace;
+		texture.wrapS = THREE.RepeatWrapping;
+		texture.wrapT = THREE.RepeatWrapping;
+		texture.repeat.set(1, 1);
 	});
+	const height = new THREE.TextureLoader().load('./01Displacement.png', function (texture) {
+		texture.colorSpace = THREE.SRGBColorSpace;
+		texture.wrapS = THREE.RepeatWrapping;
+		texture.wrapT = THREE.RepeatWrapping;
+		texture.repeat.set(1, 1);
+	});
+	const ao = new THREE.TextureLoader().load('./01AO.png', function (texture) {
+		texture.colorSpace = THREE.SRGBColorSpace;
+		texture.wrapS = THREE.RepeatWrapping;
+		texture.wrapT = THREE.RepeatWrapping;
+		texture.repeat.set(1, 1);
+	});
+	const roughness = new THREE.TextureLoader().load('./01Roughness.png', function (texture) {
+		texture.colorSpace = THREE.SRGBColorSpace;
+		texture.wrapS = THREE.RepeatWrapping;
+		texture.wrapT = THREE.RepeatWrapping;
+		texture.repeat.set(1, 1);
+	});
+	cloth.material.map = albedo;
+	cloth.material.normalMap = normal;
+	cloth.material.aoMap = ao;
+	cloth.material.bumpMap = height;
+	cloth.material.roughnessMap = roughness;
+
+	const gui = new GUI();
+	// gui.add(clothMaterial, 'wireframe').onChange(function(value)
+	// {
+	// 	if (!value)
+	// 	{
+	// 		cloth.material.map = albedo;
+	// 		cloth.material.normalMap = normal;
+	// 		cloth.material.aoMap = ao;
+	// 		cloth.material.bumpMap = height;
+	// 		cloth.material.roughnessMap = roughness;
+	// 		cloth.material.needsUpdate = true;
+	// 	}
+	// 	else
+	// 	{
+	// 		cloth.material.map = null;
+	// 		cloth.material.needsUpdate = true;
+	// 	}
+
+	// });
 	gui.addColor(clothMaterial, 'color');
 	gui.add(renderer.shadowMap, 'enabled');
+	
+	const controls = new OrbitControls(camera, renderer.domElement);
+	controls.enablePan = false;
+	controls.enableZoom = false;
+	controls.target.set(0, 1, 0);
+	controls.update();
 
 
 
@@ -202,7 +270,8 @@ function animate()
 	requestAnimationFrame(animate);
 	var deltaTime = clock.getDelta();
 
-	//cloth.rotation.x += 0.01;
+	//cloth.
+	//sphere.position.z -= 0.01;
 
 	renderer.render(scene, camera);
 	if (PBDCloth)
@@ -210,7 +279,15 @@ function animate()
 		//console.log(PBDCloth.Step(deltaTime));
 		//
 		updateCloth();
-		console.log(PBDCloth.Step());
+		PBDCloth.Step(deltaTime);
+		PBDCloth.UpdateSphere(
+			sphere.position.x,
+			sphere.position.y,
+			sphere.position.z,
+			sphere_radius
+		);
+
+		//console.log(PBDCloth.Print());
 	}
 	stats.update();
 }
@@ -223,9 +300,14 @@ function updateCloth()
 	let indexFloat = 0;
 	for (let i = 0; i < numVerts; i++) 
 	{
-		clothPositions[indexFloat++] = PBDCloth.GetPositionX(i, 0);
-		clothPositions[indexFloat++] = PBDCloth.GetPositionY(i, 1);
-		clothPositions[indexFloat++] = PBDCloth.GetPositionZ(i, 2);
+		var world_pos = new THREE.Vector3(
+			PBDCloth.GetPositionX(i), 
+			PBDCloth.GetPositionY(i), 
+			PBDCloth.GetPositionZ(i));
+		var x = cloth.worldToLocal(world_pos).toArray();
+		clothPositions[indexFloat++] = x[0];
+		clothPositions[indexFloat++] = x[1];
+		clothPositions[indexFloat++] = x[2];
 
 	}
 	cloth.geometry.computeVertexNormals();

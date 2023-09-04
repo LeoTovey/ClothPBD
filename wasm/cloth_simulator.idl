@@ -1,9 +1,16 @@
 interface ClothSim
 {
-  void ClothSim(long x_segments, long y_segments);
-  float Step(float dt);
+  void ClothSim(float width, float height, long x_segments, long y_segments);
+  void Step(float dt);
   float GetPositionX(long index);
   float GetPositionY(long index);
   float GetPositionZ(long index);
   void SetPosition(long index, float x, float y, float z);
+  void UpdateSphere(float x, float y, float z, float r);
+  [Const] DOMString Print();
+  attribute float k;
+  attribute float node_mass;
+  attribute float damping;
+  attribute float gravity;
+  attribute float dt;
 };

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Generating the bindings glue code
-python emscripten/tools/webidl_binder.py cloth_simulator.idl glue
+python deps/emscripten/tools/webidl_binder.py cloth_simulator.idl glue
 
 echo "Hello World !"
 
