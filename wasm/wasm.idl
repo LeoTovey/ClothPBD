@@ -1,0 +1,23 @@
+interface WASMSim
+{
+    void WASMSim(long n_particles);
+    void InitPosition(long index, float x, float y, float z);
+    void InitMassSpring(float width, float height, long x_segments, long y_segments, float k, float mass, float damping, float gravity);
+    void Step(float dt, long max_steps);
+    float GetPositionX(long index);
+    float GetPositionY(long index);
+    float GetPositionZ(long index);
+    void SetFixedNodeVelocity(float v0, float v1, float v2);
+    void AddSphere(float r);
+    void UpdateSphere(float x, float y, float z);
+
+
+    [Const] DOMString Print();
+    attribute long a;
+};
+
+interface Foo {
+  void Foo();
+  long getVal();
+  void setVal(long v);
+};

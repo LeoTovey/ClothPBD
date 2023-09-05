@@ -15,7 +15,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O1")
 set(CMAKE_CXX_STANDARD 17)
 
 
-add_executable(PBD cloth_simulator.cpp cloth_simulator_wrapper.cpp )
+add_executable(PBD wasm.cpp wasm_wrapper.cpp)
 
 target_link_options(PBD PRIVATE ${EMSCRIPTENOPTIONS})
 # set(CMAKE_EXECUTABLE_SUFFIX ".wasm")

@@ -197,124 +197,130 @@ Module['VoidPtr'] = VoidPtr;
   var self = this.ptr;
   _emscripten_bind_VoidPtr___destroy___0(self);
 };
-// ClothSim
-/** @suppress {undefinedVars, duplicate} @this{Object} */function ClothSim(width, height, x_segments, y_segments) {
+// WASMSim
+/** @suppress {undefinedVars, duplicate} @this{Object} */function WASMSim(n_particles) {
+  if (n_particles && typeof n_particles === 'object') n_particles = n_particles.ptr;
+  this.ptr = _emscripten_bind_WASMSim_WASMSim_1(n_particles);
+  getCache(WASMSim)[this.ptr] = this;
+};;
+WASMSim.prototype = Object.create(WrapperObject.prototype);
+WASMSim.prototype.constructor = WASMSim;
+WASMSim.prototype.__class__ = WASMSim;
+WASMSim.__cache__ = {};
+Module['WASMSim'] = WASMSim;
+
+WASMSim.prototype['InitPosition'] = WASMSim.prototype.InitPosition = /** @suppress {undefinedVars, duplicate} @this{Object} */function(index, x, y, z) {
+  var self = this.ptr;
+  if (index && typeof index === 'object') index = index.ptr;
+  if (x && typeof x === 'object') x = x.ptr;
+  if (y && typeof y === 'object') y = y.ptr;
+  if (z && typeof z === 'object') z = z.ptr;
+  _emscripten_bind_WASMSim_InitPosition_4(self, index, x, y, z);
+};;
+
+WASMSim.prototype['InitMassSpring'] = WASMSim.prototype.InitMassSpring = /** @suppress {undefinedVars, duplicate} @this{Object} */function(width, height, x_segments, y_segments, k, mass, damping, gravity) {
+  var self = this.ptr;
   if (width && typeof width === 'object') width = width.ptr;
   if (height && typeof height === 'object') height = height.ptr;
   if (x_segments && typeof x_segments === 'object') x_segments = x_segments.ptr;
   if (y_segments && typeof y_segments === 'object') y_segments = y_segments.ptr;
-  this.ptr = _emscripten_bind_ClothSim_ClothSim_4(width, height, x_segments, y_segments);
-  getCache(ClothSim)[this.ptr] = this;
+  if (k && typeof k === 'object') k = k.ptr;
+  if (mass && typeof mass === 'object') mass = mass.ptr;
+  if (damping && typeof damping === 'object') damping = damping.ptr;
+  if (gravity && typeof gravity === 'object') gravity = gravity.ptr;
+  _emscripten_bind_WASMSim_InitMassSpring_8(self, width, height, x_segments, y_segments, k, mass, damping, gravity);
 };;
-ClothSim.prototype = Object.create(WrapperObject.prototype);
-ClothSim.prototype.constructor = ClothSim;
-ClothSim.prototype.__class__ = ClothSim;
-ClothSim.__cache__ = {};
-Module['ClothSim'] = ClothSim;
 
-ClothSim.prototype['Step'] = ClothSim.prototype.Step = /** @suppress {undefinedVars, duplicate} @this{Object} */function(dt) {
+WASMSim.prototype['Step'] = WASMSim.prototype.Step = /** @suppress {undefinedVars, duplicate} @this{Object} */function(dt, max_steps) {
   var self = this.ptr;
   if (dt && typeof dt === 'object') dt = dt.ptr;
-  _emscripten_bind_ClothSim_Step_1(self, dt);
+  if (max_steps && typeof max_steps === 'object') max_steps = max_steps.ptr;
+  _emscripten_bind_WASMSim_Step_2(self, dt, max_steps);
 };;
 
-ClothSim.prototype['GetPositionX'] = ClothSim.prototype.GetPositionX = /** @suppress {undefinedVars, duplicate} @this{Object} */function(index) {
+WASMSim.prototype['GetPositionX'] = WASMSim.prototype.GetPositionX = /** @suppress {undefinedVars, duplicate} @this{Object} */function(index) {
   var self = this.ptr;
   if (index && typeof index === 'object') index = index.ptr;
-  return _emscripten_bind_ClothSim_GetPositionX_1(self, index);
+  return _emscripten_bind_WASMSim_GetPositionX_1(self, index);
 };;
 
-ClothSim.prototype['GetPositionY'] = ClothSim.prototype.GetPositionY = /** @suppress {undefinedVars, duplicate} @this{Object} */function(index) {
+WASMSim.prototype['GetPositionY'] = WASMSim.prototype.GetPositionY = /** @suppress {undefinedVars, duplicate} @this{Object} */function(index) {
   var self = this.ptr;
   if (index && typeof index === 'object') index = index.ptr;
-  return _emscripten_bind_ClothSim_GetPositionY_1(self, index);
+  return _emscripten_bind_WASMSim_GetPositionY_1(self, index);
 };;
 
-ClothSim.prototype['GetPositionZ'] = ClothSim.prototype.GetPositionZ = /** @suppress {undefinedVars, duplicate} @this{Object} */function(index) {
+WASMSim.prototype['GetPositionZ'] = WASMSim.prototype.GetPositionZ = /** @suppress {undefinedVars, duplicate} @this{Object} */function(index) {
   var self = this.ptr;
   if (index && typeof index === 'object') index = index.ptr;
-  return _emscripten_bind_ClothSim_GetPositionZ_1(self, index);
+  return _emscripten_bind_WASMSim_GetPositionZ_1(self, index);
 };;
 
-ClothSim.prototype['SetPosition'] = ClothSim.prototype.SetPosition = /** @suppress {undefinedVars, duplicate} @this{Object} */function(index, x, y, z) {
+WASMSim.prototype['SetFixedNodeVelocity'] = WASMSim.prototype.SetFixedNodeVelocity = /** @suppress {undefinedVars, duplicate} @this{Object} */function(v0, v1, v2) {
   var self = this.ptr;
-  if (index && typeof index === 'object') index = index.ptr;
-  if (x && typeof x === 'object') x = x.ptr;
-  if (y && typeof y === 'object') y = y.ptr;
-  if (z && typeof z === 'object') z = z.ptr;
-  _emscripten_bind_ClothSim_SetPosition_4(self, index, x, y, z);
+  if (v0 && typeof v0 === 'object') v0 = v0.ptr;
+  if (v1 && typeof v1 === 'object') v1 = v1.ptr;
+  if (v2 && typeof v2 === 'object') v2 = v2.ptr;
+  _emscripten_bind_WASMSim_SetFixedNodeVelocity_3(self, v0, v1, v2);
 };;
 
-ClothSim.prototype['UpdateSphere'] = ClothSim.prototype.UpdateSphere = /** @suppress {undefinedVars, duplicate} @this{Object} */function(x, y, z, r) {
+WASMSim.prototype['AddSphere'] = WASMSim.prototype.AddSphere = /** @suppress {undefinedVars, duplicate} @this{Object} */function(r) {
   var self = this.ptr;
-  if (x && typeof x === 'object') x = x.ptr;
-  if (y && typeof y === 'object') y = y.ptr;
-  if (z && typeof z === 'object') z = z.ptr;
   if (r && typeof r === 'object') r = r.ptr;
-  _emscripten_bind_ClothSim_UpdateSphere_4(self, x, y, z, r);
+  _emscripten_bind_WASMSim_AddSphere_1(self, r);
 };;
 
-ClothSim.prototype['Print'] = ClothSim.prototype.Print = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+WASMSim.prototype['UpdateSphere'] = WASMSim.prototype.UpdateSphere = /** @suppress {undefinedVars, duplicate} @this{Object} */function(x, y, z) {
   var self = this.ptr;
-  return UTF8ToString(_emscripten_bind_ClothSim_Print_0(self));
+  if (x && typeof x === 'object') x = x.ptr;
+  if (y && typeof y === 'object') y = y.ptr;
+  if (z && typeof z === 'object') z = z.ptr;
+  _emscripten_bind_WASMSim_UpdateSphere_3(self, x, y, z);
 };;
 
-  ClothSim.prototype['get_k'] = ClothSim.prototype.get_k = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+WASMSim.prototype['Print'] = WASMSim.prototype.Print = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
   var self = this.ptr;
-  return _emscripten_bind_ClothSim_get_k_0(self);
+  return UTF8ToString(_emscripten_bind_WASMSim_Print_0(self));
+};;
+
+  WASMSim.prototype['get_a'] = WASMSim.prototype.get_a = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  var self = this.ptr;
+  return _emscripten_bind_WASMSim_get_a_0(self);
 };
-    ClothSim.prototype['set_k'] = ClothSim.prototype.set_k = /** @suppress {undefinedVars, duplicate} @this{Object} */function(arg0) {
+    WASMSim.prototype['set_a'] = WASMSim.prototype.set_a = /** @suppress {undefinedVars, duplicate} @this{Object} */function(arg0) {
   var self = this.ptr;
   if (arg0 && typeof arg0 === 'object') arg0 = arg0.ptr;
-  _emscripten_bind_ClothSim_set_k_1(self, arg0);
+  _emscripten_bind_WASMSim_set_a_1(self, arg0);
 };
     /** @suppress {checkTypes} */
-    Object.defineProperty(ClothSim.prototype, 'k', { get: ClothSim.prototype.get_k, set: ClothSim.prototype.set_k });
-  ClothSim.prototype['get_node_mass'] = ClothSim.prototype.get_node_mass = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+    Object.defineProperty(WASMSim.prototype, 'a', { get: WASMSim.prototype.get_a, set: WASMSim.prototype.set_a });
+  WASMSim.prototype['__destroy__'] = WASMSim.prototype.__destroy__ = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
   var self = this.ptr;
-  return _emscripten_bind_ClothSim_get_node_mass_0(self);
+  _emscripten_bind_WASMSim___destroy___0(self);
 };
-    ClothSim.prototype['set_node_mass'] = ClothSim.prototype.set_node_mass = /** @suppress {undefinedVars, duplicate} @this{Object} */function(arg0) {
+// Foo
+/** @suppress {undefinedVars, duplicate} @this{Object} */function Foo() {
+  this.ptr = _emscripten_bind_Foo_Foo_0();
+  getCache(Foo)[this.ptr] = this;
+};;
+Foo.prototype = Object.create(WrapperObject.prototype);
+Foo.prototype.constructor = Foo;
+Foo.prototype.__class__ = Foo;
+Foo.__cache__ = {};
+Module['Foo'] = Foo;
+
+Foo.prototype['getVal'] = Foo.prototype.getVal = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
   var self = this.ptr;
-  if (arg0 && typeof arg0 === 'object') arg0 = arg0.ptr;
-  _emscripten_bind_ClothSim_set_node_mass_1(self, arg0);
-};
-    /** @suppress {checkTypes} */
-    Object.defineProperty(ClothSim.prototype, 'node_mass', { get: ClothSim.prototype.get_node_mass, set: ClothSim.prototype.set_node_mass });
-  ClothSim.prototype['get_damping'] = ClothSim.prototype.get_damping = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  return _emscripten_bind_Foo_getVal_0(self);
+};;
+
+Foo.prototype['setVal'] = Foo.prototype.setVal = /** @suppress {undefinedVars, duplicate} @this{Object} */function(v) {
   var self = this.ptr;
-  return _emscripten_bind_ClothSim_get_damping_0(self);
-};
-    ClothSim.prototype['set_damping'] = ClothSim.prototype.set_damping = /** @suppress {undefinedVars, duplicate} @this{Object} */function(arg0) {
+  if (v && typeof v === 'object') v = v.ptr;
+  _emscripten_bind_Foo_setVal_1(self, v);
+};;
+
+  Foo.prototype['__destroy__'] = Foo.prototype.__destroy__ = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
   var self = this.ptr;
-  if (arg0 && typeof arg0 === 'object') arg0 = arg0.ptr;
-  _emscripten_bind_ClothSim_set_damping_1(self, arg0);
-};
-    /** @suppress {checkTypes} */
-    Object.defineProperty(ClothSim.prototype, 'damping', { get: ClothSim.prototype.get_damping, set: ClothSim.prototype.set_damping });
-  ClothSim.prototype['get_gravity'] = ClothSim.prototype.get_gravity = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
-  var self = this.ptr;
-  return _emscripten_bind_ClothSim_get_gravity_0(self);
-};
-    ClothSim.prototype['set_gravity'] = ClothSim.prototype.set_gravity = /** @suppress {undefinedVars, duplicate} @this{Object} */function(arg0) {
-  var self = this.ptr;
-  if (arg0 && typeof arg0 === 'object') arg0 = arg0.ptr;
-  _emscripten_bind_ClothSim_set_gravity_1(self, arg0);
-};
-    /** @suppress {checkTypes} */
-    Object.defineProperty(ClothSim.prototype, 'gravity', { get: ClothSim.prototype.get_gravity, set: ClothSim.prototype.set_gravity });
-  ClothSim.prototype['get_dt'] = ClothSim.prototype.get_dt = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
-  var self = this.ptr;
-  return _emscripten_bind_ClothSim_get_dt_0(self);
-};
-    ClothSim.prototype['set_dt'] = ClothSim.prototype.set_dt = /** @suppress {undefinedVars, duplicate} @this{Object} */function(arg0) {
-  var self = this.ptr;
-  if (arg0 && typeof arg0 === 'object') arg0 = arg0.ptr;
-  _emscripten_bind_ClothSim_set_dt_1(self, arg0);
-};
-    /** @suppress {checkTypes} */
-    Object.defineProperty(ClothSim.prototype, 'dt', { get: ClothSim.prototype.get_dt, set: ClothSim.prototype.set_dt });
-  ClothSim.prototype['__destroy__'] = ClothSim.prototype.__destroy__ = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
-  var self = this.ptr;
-  _emscripten_bind_ClothSim___destroy___0(self);
+  _emscripten_bind_Foo___destroy___0(self);
 };

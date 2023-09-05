@@ -9,18 +9,18 @@ import Module from './PBD.js';
 
 
 
-let PBD;
+let WASMSim;
 let scene, renderer, camera, stats, container;
-let cloth, PBDCloth, dirLight, sphere;
+let cloth, dirLight, sphere;
 var clock = new THREE.Clock();
 
-// const dt = 1e-3;
+const dt = 1e-3;
 const k = 8.0;
 const damping = 0.2;
 const mass = 1.0;
 const gravity = 0.01;
 const sphere_radius = 0.4;
-
+const fixed_v = [0.0, 0.0, 1];
 init();
 animate();
 
@@ -146,19 +146,14 @@ function init() {
 
 	Module().then(function (module) 
 	{
-		PBD = module;
-		PBDCloth = new PBD.ClothSim(clothWidth, clothHeight, clothNumSegmentsZ, clothNumSegmentsY);
-		console.log(PBDCloth);
-		PBDCloth.k = k;
-		PBDCloth.damping = damping;
-		PBDCloth.node_mass = mass;
-		PBDCloth.gravity = gravity;
+		WASMSim = new module.WASMSim((clothNumSegmentsY + 1) * (clothNumSegmentsZ + 1));
+		console.log(WASMSim.a);
 		// PBDCloth.dt = dt;
-		PBDCloth.UpdateSphere(sphere.position.x,
-			sphere.position.y,
-			sphere.position.z,
-			sphere_radius
-			);
+		// PBDCloth.UpdateSphere(sphere.position.x,
+		// 	sphere.position.y,
+		// 	sphere.position.z,
+		// 	sphere_radius
+		// 	);
 		const clothPositions = cloth.geometry.attributes.position.array;
 		const numVerts = clothPositions.length / 3;
 		var worldMatrix = cloth.worldMatrix;
@@ -171,11 +166,16 @@ function init() {
 				clothPositions[indexFloat + 1],
 				clothPositions[indexFloat + 2]);
 			var x = (cloth.localToWorld(positionAttribute)).toArray();
-			PBDCloth.SetPosition(i, x[0], x[1], x[2]);
+			WASMSim.InitPosition(i, x[0], x[1], x[2]);
 		}
 		cloth.geometry.computeVertexNormals();
 		cloth.geometry.attributes.position.needsUpdate = true;
 		cloth.geometry.attributes.normal.needsUpdate = true;
+
+		WASMSim.InitMassSpring(clothWidth, clothHeight, clothNumSegmentsZ, clothNumSegmentsY, k, mass, damping, gravity);
+		WASMSim.SetFixedNodeVelocity(fixed_v[0], fixed_v[1], fixed_v[2]);
+		WASMSim.AddSphere(sphere_radius);
+		WASMSim.UpdateSphere(sphere.position.x, sphere.position.y, sphere.position.z);
 	});
 
 
@@ -274,19 +274,19 @@ function animate()
 	//sphere.position.z -= 0.01;
 
 	renderer.render(scene, camera);
-	if (PBDCloth)
+	if (WASMSim)
 	{
 		//console.log(PBDCloth.Step(deltaTime));
 		//
 		updateCloth();
-		PBDCloth.dt = deltaTime / 10.0;
-		PBDCloth.Step(deltaTime);
-		PBDCloth.UpdateSphere(
-			sphere.position.x,
-			sphere.position.y,
-			sphere.position.z,
-			sphere_radius
-		);
+		// PBDCloth.dt = deltaTime / 10.0;
+		WASMSim.Step(dt, 10);
+		// PBDCloth.UpdateSphere(
+		// 	sphere.position.x,
+		// 	sphere.position.y,
+		// 	sphere.position.z,
+		// 	sphere_radius
+		// );
 
 		//console.log(PBDCloth.Print());
 	}
@@ -302,9 +302,9 @@ function updateCloth()
 	for (let i = 0; i < numVerts; i++) 
 	{
 		var world_pos = new THREE.Vector3(
-			PBDCloth.GetPositionX(i), 
-			PBDCloth.GetPositionY(i), 
-			PBDCloth.GetPositionZ(i));
+			WASMSim.GetPositionX(i), 
+			WASMSim.GetPositionY(i), 
+			WASMSim.GetPositionZ(i));
 		var x = cloth.worldToLocal(world_pos).toArray();
 		clothPositions[indexFloat++] = x[0];
 		clothPositions[indexFloat++] = x[1];

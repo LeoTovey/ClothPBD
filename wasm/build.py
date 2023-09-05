@@ -2,7 +2,7 @@ import subprocess
 import os
 
 # 运行 webidl_binder.py 命令
-subprocess.run(["python", "deps/emscripten/tools/webidl_binder.py", "cloth_simulator.idl", "glue"])
+subprocess.run(["python", "deps/emscripten/tools/webidl_binder.py", "wasm.idl", "glue"])
 
 print("Hello World!")
 
@@ -36,4 +36,4 @@ with open('build/PBD.js', 'w') as file:
 
 subprocess.run(["cp", "build/PBD.js", "../src/"])
 subprocess.run(["cp", "build/PBD.wasm", "../src/"])
-subprocess.run(["npm", "run", "dev"])
+# subprocess.run(["npm", "run", "dev"])
