@@ -14,13 +14,23 @@ let scene, renderer, camera, stats, container;
 let cloth, dirLight, sphere;
 var clock = new THREE.Clock();
 
-const dt = 1e-3;
-const k = 8.0;
+// const dt = 1e-4;
+// const k = 50.0;
+// const damping = 0.2;
+// const mass = 1.0;
+// const gravity = 0.08;
+// const sphere_radius = 0.4;
+// const fixed_v = [0.0, 0.0, 10];
+
+const dt = 0.0333;
+const k = 5e4;
 const damping = 0.2;
 const mass = 1.0;
-const gravity = 0.01;
-const sphere_radius = 0.4;
-const fixed_v = [0.0, 0.0, 1];
+const gravity = -9.8;
+const sphere_radius = 1.0;
+const fixed_v = [0.0, 0.0, 0.05];
+
+
 init();
 animate();
 
@@ -111,13 +121,13 @@ function init() {
 	// 	thetaLength ?: number,
 
 	// interactive sphere
-	const sphereGeometry = new THREE.SphereGeometry(sphere_radius - 0.1);
+	const sphereGeometry = new THREE.SphereGeometry(sphere_radius - 0.08);
 	const sphereMaterial = new THREE.MeshStandardMaterial({ color: 0xFFFFFF });
 	sphereMaterial.roughness = 1.0;
 	console.log(sphereMaterial);
 	sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
 	sphere.castShadow = true;
-	sphere.position.set(0, 1, 1);
+	sphere.position.set(0, 1.2, 1);
 	scene.add(sphere);
 
 	//cloth
@@ -172,10 +182,11 @@ function init() {
 		cloth.geometry.attributes.position.needsUpdate = true;
 		cloth.geometry.attributes.normal.needsUpdate = true;
 
-		WASMSim.InitMassSpring(clothWidth, clothHeight, clothNumSegmentsZ, clothNumSegmentsY, k, mass, damping, gravity);
+		WASMSim.InitSim(0, clothWidth, clothHeight, clothNumSegmentsZ, clothNumSegmentsY, k, mass, damping, gravity);
 		WASMSim.SetFixedNodeVelocity(fixed_v[0], fixed_v[1], fixed_v[2]);
 		WASMSim.AddSphere(sphere_radius);
 		WASMSim.UpdateSphere(sphere.position.x, sphere.position.y, sphere.position.z);
+		console.log(WASMSim.Print());
 	});
 
 
@@ -289,6 +300,8 @@ function animate()
 		// );
 
 		//console.log(PBDCloth.Print());
+		//console.log(WASMSim.Print());
+		
 	}
 	stats.update();
 }
