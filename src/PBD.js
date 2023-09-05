@@ -1522,7 +1522,7 @@ var _webidl_malloc = Module['_webidl_malloc'] = (a0) => (_webidl_malloc = Module
 var _emscripten_bind_VoidPtr___destroy___0 = Module['_emscripten_bind_VoidPtr___destroy___0'] = (a0) => (_emscripten_bind_VoidPtr___destroy___0 = Module['_emscripten_bind_VoidPtr___destroy___0'] = wasmExports['emscripten_bind_VoidPtr___destroy___0'])(a0);
 var _emscripten_bind_WASMSim_WASMSim_1 = Module['_emscripten_bind_WASMSim_WASMSim_1'] = (a0) => (_emscripten_bind_WASMSim_WASMSim_1 = Module['_emscripten_bind_WASMSim_WASMSim_1'] = wasmExports['emscripten_bind_WASMSim_WASMSim_1'])(a0);
 var _emscripten_bind_WASMSim_InitPosition_4 = Module['_emscripten_bind_WASMSim_InitPosition_4'] = (a0, a1, a2, a3, a4) => (_emscripten_bind_WASMSim_InitPosition_4 = Module['_emscripten_bind_WASMSim_InitPosition_4'] = wasmExports['emscripten_bind_WASMSim_InitPosition_4'])(a0, a1, a2, a3, a4);
-var _emscripten_bind_WASMSim_InitMassSpring_8 = Module['_emscripten_bind_WASMSim_InitMassSpring_8'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_emscripten_bind_WASMSim_InitMassSpring_8 = Module['_emscripten_bind_WASMSim_InitMassSpring_8'] = wasmExports['emscripten_bind_WASMSim_InitMassSpring_8'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+var _emscripten_bind_WASMSim_InitSim_9 = Module['_emscripten_bind_WASMSim_InitSim_9'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (_emscripten_bind_WASMSim_InitSim_9 = Module['_emscripten_bind_WASMSim_InitSim_9'] = wasmExports['emscripten_bind_WASMSim_InitSim_9'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
 var _emscripten_bind_WASMSim_Step_2 = Module['_emscripten_bind_WASMSim_Step_2'] = (a0, a1, a2) => (_emscripten_bind_WASMSim_Step_2 = Module['_emscripten_bind_WASMSim_Step_2'] = wasmExports['emscripten_bind_WASMSim_Step_2'])(a0, a1, a2);
 var _emscripten_bind_WASMSim_GetPositionX_1 = Module['_emscripten_bind_WASMSim_GetPositionX_1'] = (a0, a1) => (_emscripten_bind_WASMSim_GetPositionX_1 = Module['_emscripten_bind_WASMSim_GetPositionX_1'] = wasmExports['emscripten_bind_WASMSim_GetPositionX_1'])(a0, a1);
 var _emscripten_bind_WASMSim_GetPositionY_1 = Module['_emscripten_bind_WASMSim_GetPositionY_1'] = (a0, a1) => (_emscripten_bind_WASMSim_GetPositionY_1 = Module['_emscripten_bind_WASMSim_GetPositionY_1'] = wasmExports['emscripten_bind_WASMSim_GetPositionY_1'])(a0, a1);
@@ -1547,8 +1547,8 @@ var dynCall_viijii = Module['dynCall_viijii'] = (a0, a1, a2, a3, a4, a5, a6) => 
 var dynCall_iiiiij = Module['dynCall_iiiiij'] = (a0, a1, a2, a3, a4, a5, a6) => (dynCall_iiiiij = Module['dynCall_iiiiij'] = wasmExports['dynCall_iiiiij'])(a0, a1, a2, a3, a4, a5, a6);
 var dynCall_iiiiijj = Module['dynCall_iiiiijj'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (dynCall_iiiiijj = Module['dynCall_iiiiijj'] = wasmExports['dynCall_iiiiijj'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
 var dynCall_iiiiiijj = Module['dynCall_iiiiiijj'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (dynCall_iiiiiijj = Module['dynCall_iiiiiijj'] = wasmExports['dynCall_iiiiiijj'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
-var ___start_em_js = Module['___start_em_js'] = 15026;
-var ___stop_em_js = Module['___stop_em_js'] = 15124;
+var ___start_em_js = Module['___start_em_js'] = 15074;
+var ___stop_em_js = Module['___stop_em_js'] = 15172;
 
 // include: postamble.js
 // === Auto-generated postamble setup entry stuff ===
@@ -1841,8 +1841,9 @@ WASMSim.prototype['InitPosition'] = WASMSim.prototype.InitPosition = /** @suppre
   _emscripten_bind_WASMSim_InitPosition_4(self, index, x, y, z);
 };;
 
-WASMSim.prototype['InitMassSpring'] = WASMSim.prototype.InitMassSpring = /** @suppress {undefinedVars, duplicate} @this{Object} */function(width, height, x_segments, y_segments, k, mass, damping, gravity) {
+WASMSim.prototype['InitSim'] = WASMSim.prototype.InitSim = /** @suppress {undefinedVars, duplicate} @this{Object} */function(sim_type, width, height, x_segments, y_segments, k, mass, damping, gravity) {
   var self = this.ptr;
+  if (sim_type && typeof sim_type === 'object') sim_type = sim_type.ptr;
   if (width && typeof width === 'object') width = width.ptr;
   if (height && typeof height === 'object') height = height.ptr;
   if (x_segments && typeof x_segments === 'object') x_segments = x_segments.ptr;
@@ -1851,7 +1852,7 @@ WASMSim.prototype['InitMassSpring'] = WASMSim.prototype.InitMassSpring = /** @su
   if (mass && typeof mass === 'object') mass = mass.ptr;
   if (damping && typeof damping === 'object') damping = damping.ptr;
   if (gravity && typeof gravity === 'object') gravity = gravity.ptr;
-  _emscripten_bind_WASMSim_InitMassSpring_8(self, width, height, x_segments, y_segments, k, mass, damping, gravity);
+  _emscripten_bind_WASMSim_InitSim_9(self, sim_type, width, height, x_segments, y_segments, k, mass, damping, gravity);
 };;
 
 WASMSim.prototype['Step'] = WASMSim.prototype.Step = /** @suppress {undefinedVars, duplicate} @this{Object} */function(dt, max_steps) {

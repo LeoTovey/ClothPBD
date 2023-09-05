@@ -2,7 +2,7 @@ interface WASMSim
 {
     void WASMSim(long n_particles);
     void InitPosition(long index, float x, float y, float z);
-    void InitMassSpring(float width, float height, long x_segments, long y_segments, float k, float mass, float damping, float gravity);
+    void InitSim(long sim_type, float width, float height, long x_segments, long y_segments, float k, float mass, float damping, float gravity);
     void Step(float dt, long max_steps);
     float GetPositionX(long index);
     float GetPositionY(long index);
@@ -13,7 +13,7 @@ interface WASMSim
 
 
     [Const] DOMString Print();
-    attribute long a;
+    attribute long max_iteration;
 };
 
 interface Foo {

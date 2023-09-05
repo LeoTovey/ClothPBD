@@ -39,8 +39,8 @@ void EMSCRIPTEN_KEEPALIVE emscripten_bind_WASMSim_InitPosition_4(WASMSim* self, 
   self->InitPosition(index, x, y, z);
 }
 
-void EMSCRIPTEN_KEEPALIVE emscripten_bind_WASMSim_InitMassSpring_8(WASMSim* self, float width, float height, int x_segments, int y_segments, float k, float mass, float damping, float gravity) {
-  self->InitMassSpring(width, height, x_segments, y_segments, k, mass, damping, gravity);
+void EMSCRIPTEN_KEEPALIVE emscripten_bind_WASMSim_InitSim_9(WASMSim* self, int sim_type, float width, float height, int x_segments, int y_segments, float k, float mass, float damping, float gravity) {
+  self->InitSim(sim_type, width, height, x_segments, y_segments, k, mass, damping, gravity);
 }
 
 void EMSCRIPTEN_KEEPALIVE emscripten_bind_WASMSim_Step_2(WASMSim* self, float dt, int max_steps) {

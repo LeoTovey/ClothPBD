@@ -218,8 +218,9 @@ WASMSim.prototype['InitPosition'] = WASMSim.prototype.InitPosition = /** @suppre
   _emscripten_bind_WASMSim_InitPosition_4(self, index, x, y, z);
 };;
 
-WASMSim.prototype['InitMassSpring'] = WASMSim.prototype.InitMassSpring = /** @suppress {undefinedVars, duplicate} @this{Object} */function(width, height, x_segments, y_segments, k, mass, damping, gravity) {
+WASMSim.prototype['InitSim'] = WASMSim.prototype.InitSim = /** @suppress {undefinedVars, duplicate} @this{Object} */function(sim_type, width, height, x_segments, y_segments, k, mass, damping, gravity) {
   var self = this.ptr;
+  if (sim_type && typeof sim_type === 'object') sim_type = sim_type.ptr;
   if (width && typeof width === 'object') width = width.ptr;
   if (height && typeof height === 'object') height = height.ptr;
   if (x_segments && typeof x_segments === 'object') x_segments = x_segments.ptr;
@@ -228,7 +229,7 @@ WASMSim.prototype['InitMassSpring'] = WASMSim.prototype.InitMassSpring = /** @su
   if (mass && typeof mass === 'object') mass = mass.ptr;
   if (damping && typeof damping === 'object') damping = damping.ptr;
   if (gravity && typeof gravity === 'object') gravity = gravity.ptr;
-  _emscripten_bind_WASMSim_InitMassSpring_8(self, width, height, x_segments, y_segments, k, mass, damping, gravity);
+  _emscripten_bind_WASMSim_InitSim_9(self, sim_type, width, height, x_segments, y_segments, k, mass, damping, gravity);
 };;
 
 WASMSim.prototype['Step'] = WASMSim.prototype.Step = /** @suppress {undefinedVars, duplicate} @this{Object} */function(dt, max_steps) {
