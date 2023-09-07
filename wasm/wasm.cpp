@@ -2,7 +2,7 @@
 
 WASMSim::WASMSim(int n_particles) : pos_temp(n_particles)
 {
-    a = 33;
+   
 }
 
 WASMSim::~WASMSim()
@@ -53,13 +53,13 @@ void WASMSim::InitSim(int sim_type, float width, float height, int x_segments, i
 
     if (sim_type == 0)
     {
-        ImplicitSimParams<float> params;
+        JacobiSimParams<float> params;
         params.k = k;
         params.damping = damping;
         params.gravity = gravity;
         params.mass = mass;
         params.max_iteration = 32;
-        sim = new ImplicitSim<float>(pos_temp, edges, params);
+        sim = new JacobiSim<float>(pos_temp, edges, params);
     }
     else
     {

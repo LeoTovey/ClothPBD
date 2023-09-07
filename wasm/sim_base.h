@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Eigen/Dense>
+#include <Eigen/Sparse>
 #include <vector>
 #include <math.h>
 
@@ -12,8 +13,6 @@ using Vector = Eigen::Matrix<T, rows, 1>;
 
 template <class T>
 using Vector3 = Vector<T, 3>;
-
-
 
 template <typename T>
 class CollisionShape
@@ -31,7 +30,7 @@ public:
     T radius;
 
     Sphere(const Vec3T &center, T radius) : center(center), radius(radius) {}
-    Sphere(){}
+    Sphere() {}
 
     bool IsColliding(const Vec3T &particle, Vec3T &result) const override
     {
@@ -74,7 +73,7 @@ protected:
     Sphere<T> sphere;
 
 public:
-    SimBase(unsigned int n_particles, unsigned int n_edges, const std::vector<Vec3T> &pos, const std::vector<int> & edges);
+    SimBase(unsigned int n_particles, unsigned int n_edges, const std::vector<Vec3T> &pos, const std::vector<int> &edges);
     virtual ~SimBase();
 
     // void SetPosition(const TV &pos);
@@ -82,7 +81,7 @@ public:
     virtual void Substep(T dt){};
     virtual void Reset() = 0;
 
-    void SetX(unsigned index, const Vec3T& pos);
+    void SetX(unsigned index, const Vec3T &pos);
     Vec3T GetX(unsigned index) const;
     void AddFixedNodes(unsigned int node_0, unsigned int node_1);
     void SetFixedNodeVelocity(Vec3T velocity) { fixed_node_v = velocity; }
@@ -93,17 +92,15 @@ public:
     std::vector<std::string> logs;
 };
 
-
-
-
-
 template <typename T>
-inline SimBase<T>::SimBase(unsigned int n_particles, unsigned int n_edges, const std::vector<Vec3T> &pos, const std::vector<int> &edges) : n_particles(n_particles), n_edges(n_edges),
-    x(n_particles, Vector3<T>::Zero()),
-    f(n_particles, Vector3<T>::Zero()),
-    v(n_particles, Vector3<T>::Zero()),
-    x_reset(n_particles, Vector3<T>::Zero()),
-    e(n_edges * 2), l(n_edges)
+inline SimBase<T>::SimBase(unsigned int n_particles, unsigned int n_edges, const std::vector<Vec3T> &pos, const std::vector<int> &edges)
+    : n_particles(n_particles),
+      n_edges(n_edges),
+      x(n_particles, Vector3<T>::Zero()),
+      f(n_particles, Vector3<T>::Zero()),
+      v(n_particles, Vector3<T>::Zero()),
+      x_reset(n_particles, Vector3<T>::Zero()),
+      e(n_edges * 2), l(n_edges)
 {
     std::copy(pos.begin(), pos.end(), x.begin());
     std::copy(pos.begin(), pos.end(), x_reset.begin());

@@ -75,12 +75,12 @@ const char* EMSCRIPTEN_KEEPALIVE emscripten_bind_WASMSim_Print_0(WASMSim* self) 
   return self->Print();
 }
 
-int EMSCRIPTEN_KEEPALIVE emscripten_bind_WASMSim_get_a_0(WASMSim* self) {
-  return self->a;
+int EMSCRIPTEN_KEEPALIVE emscripten_bind_WASMSim_get_max_iteration_0(WASMSim* self) {
+  return self->max_iteration;
 }
 
-void EMSCRIPTEN_KEEPALIVE emscripten_bind_WASMSim_set_a_1(WASMSim* self, int arg0) {
-  self->a = arg0;
+void EMSCRIPTEN_KEEPALIVE emscripten_bind_WASMSim_set_max_iteration_1(WASMSim* self, int arg0) {
+  self->max_iteration = arg0;
 }
 
 void EMSCRIPTEN_KEEPALIVE emscripten_bind_WASMSim___destroy___0(WASMSim* self) {

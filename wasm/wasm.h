@@ -2,6 +2,7 @@
 
 #include "mass_spings.h"
 #include "implicit_solver.h"
+#include "jacobi_solver.h"
 #include <memory.h>
 
 class Foo
@@ -24,7 +25,9 @@ private:
     int n_particles;
     int n_edges;
 
+
 public:
+    int max_iteration;
     WASMSim(int n_particles);
     ~WASMSim();
 

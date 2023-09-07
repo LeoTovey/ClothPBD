@@ -1531,8 +1531,8 @@ var _emscripten_bind_WASMSim_SetFixedNodeVelocity_3 = Module['_emscripten_bind_W
 var _emscripten_bind_WASMSim_AddSphere_1 = Module['_emscripten_bind_WASMSim_AddSphere_1'] = (a0, a1) => (_emscripten_bind_WASMSim_AddSphere_1 = Module['_emscripten_bind_WASMSim_AddSphere_1'] = wasmExports['emscripten_bind_WASMSim_AddSphere_1'])(a0, a1);
 var _emscripten_bind_WASMSim_UpdateSphere_3 = Module['_emscripten_bind_WASMSim_UpdateSphere_3'] = (a0, a1, a2, a3) => (_emscripten_bind_WASMSim_UpdateSphere_3 = Module['_emscripten_bind_WASMSim_UpdateSphere_3'] = wasmExports['emscripten_bind_WASMSim_UpdateSphere_3'])(a0, a1, a2, a3);
 var _emscripten_bind_WASMSim_Print_0 = Module['_emscripten_bind_WASMSim_Print_0'] = (a0) => (_emscripten_bind_WASMSim_Print_0 = Module['_emscripten_bind_WASMSim_Print_0'] = wasmExports['emscripten_bind_WASMSim_Print_0'])(a0);
-var _emscripten_bind_WASMSim_get_a_0 = Module['_emscripten_bind_WASMSim_get_a_0'] = (a0) => (_emscripten_bind_WASMSim_get_a_0 = Module['_emscripten_bind_WASMSim_get_a_0'] = wasmExports['emscripten_bind_WASMSim_get_a_0'])(a0);
-var _emscripten_bind_WASMSim_set_a_1 = Module['_emscripten_bind_WASMSim_set_a_1'] = (a0, a1) => (_emscripten_bind_WASMSim_set_a_1 = Module['_emscripten_bind_WASMSim_set_a_1'] = wasmExports['emscripten_bind_WASMSim_set_a_1'])(a0, a1);
+var _emscripten_bind_WASMSim_get_max_iteration_0 = Module['_emscripten_bind_WASMSim_get_max_iteration_0'] = (a0) => (_emscripten_bind_WASMSim_get_max_iteration_0 = Module['_emscripten_bind_WASMSim_get_max_iteration_0'] = wasmExports['emscripten_bind_WASMSim_get_max_iteration_0'])(a0);
+var _emscripten_bind_WASMSim_set_max_iteration_1 = Module['_emscripten_bind_WASMSim_set_max_iteration_1'] = (a0, a1) => (_emscripten_bind_WASMSim_set_max_iteration_1 = Module['_emscripten_bind_WASMSim_set_max_iteration_1'] = wasmExports['emscripten_bind_WASMSim_set_max_iteration_1'])(a0, a1);
 var _emscripten_bind_WASMSim___destroy___0 = Module['_emscripten_bind_WASMSim___destroy___0'] = (a0) => (_emscripten_bind_WASMSim___destroy___0 = Module['_emscripten_bind_WASMSim___destroy___0'] = wasmExports['emscripten_bind_WASMSim___destroy___0'])(a0);
 var _emscripten_bind_Foo_Foo_0 = Module['_emscripten_bind_Foo_Foo_0'] = () => (_emscripten_bind_Foo_Foo_0 = Module['_emscripten_bind_Foo_Foo_0'] = wasmExports['emscripten_bind_Foo_Foo_0'])();
 var _emscripten_bind_Foo_getVal_0 = Module['_emscripten_bind_Foo_getVal_0'] = (a0) => (_emscripten_bind_Foo_getVal_0 = Module['_emscripten_bind_Foo_getVal_0'] = wasmExports['emscripten_bind_Foo_getVal_0'])(a0);
@@ -1547,8 +1547,8 @@ var dynCall_viijii = Module['dynCall_viijii'] = (a0, a1, a2, a3, a4, a5, a6) => 
 var dynCall_iiiiij = Module['dynCall_iiiiij'] = (a0, a1, a2, a3, a4, a5, a6) => (dynCall_iiiiij = Module['dynCall_iiiiij'] = wasmExports['dynCall_iiiiij'])(a0, a1, a2, a3, a4, a5, a6);
 var dynCall_iiiiijj = Module['dynCall_iiiiijj'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (dynCall_iiiiijj = Module['dynCall_iiiiijj'] = wasmExports['dynCall_iiiiijj'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
 var dynCall_iiiiiijj = Module['dynCall_iiiiiijj'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (dynCall_iiiiiijj = Module['dynCall_iiiiiijj'] = wasmExports['dynCall_iiiiiijj'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
-var ___start_em_js = Module['___start_em_js'] = 15074;
-var ___stop_em_js = Module['___stop_em_js'] = 15172;
+var ___start_em_js = Module['___start_em_js'] = 16466;
+var ___stop_em_js = Module['___stop_em_js'] = 16564;
 
 // include: postamble.js
 // === Auto-generated postamble setup entry stuff ===
@@ -1907,17 +1907,17 @@ WASMSim.prototype['Print'] = WASMSim.prototype.Print = /** @suppress {undefinedV
   return UTF8ToString(_emscripten_bind_WASMSim_Print_0(self));
 };;
 
-  WASMSim.prototype['get_a'] = WASMSim.prototype.get_a = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  WASMSim.prototype['get_max_iteration'] = WASMSim.prototype.get_max_iteration = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
   var self = this.ptr;
-  return _emscripten_bind_WASMSim_get_a_0(self);
+  return _emscripten_bind_WASMSim_get_max_iteration_0(self);
 };
-    WASMSim.prototype['set_a'] = WASMSim.prototype.set_a = /** @suppress {undefinedVars, duplicate} @this{Object} */function(arg0) {
+    WASMSim.prototype['set_max_iteration'] = WASMSim.prototype.set_max_iteration = /** @suppress {undefinedVars, duplicate} @this{Object} */function(arg0) {
   var self = this.ptr;
   if (arg0 && typeof arg0 === 'object') arg0 = arg0.ptr;
-  _emscripten_bind_WASMSim_set_a_1(self, arg0);
+  _emscripten_bind_WASMSim_set_max_iteration_1(self, arg0);
 };
     /** @suppress {checkTypes} */
-    Object.defineProperty(WASMSim.prototype, 'a', { get: WASMSim.prototype.get_a, set: WASMSim.prototype.set_a });
+    Object.defineProperty(WASMSim.prototype, 'max_iteration', { get: WASMSim.prototype.get_max_iteration, set: WASMSim.prototype.set_max_iteration });
   WASMSim.prototype['__destroy__'] = WASMSim.prototype.__destroy__ = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
   var self = this.ptr;
   _emscripten_bind_WASMSim___destroy___0(self);

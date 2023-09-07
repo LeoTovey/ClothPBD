@@ -284,17 +284,17 @@ WASMSim.prototype['Print'] = WASMSim.prototype.Print = /** @suppress {undefinedV
   return UTF8ToString(_emscripten_bind_WASMSim_Print_0(self));
 };;
 
-  WASMSim.prototype['get_a'] = WASMSim.prototype.get_a = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  WASMSim.prototype['get_max_iteration'] = WASMSim.prototype.get_max_iteration = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
   var self = this.ptr;
-  return _emscripten_bind_WASMSim_get_a_0(self);
+  return _emscripten_bind_WASMSim_get_max_iteration_0(self);
 };
-    WASMSim.prototype['set_a'] = WASMSim.prototype.set_a = /** @suppress {undefinedVars, duplicate} @this{Object} */function(arg0) {
+    WASMSim.prototype['set_max_iteration'] = WASMSim.prototype.set_max_iteration = /** @suppress {undefinedVars, duplicate} @this{Object} */function(arg0) {
   var self = this.ptr;
   if (arg0 && typeof arg0 === 'object') arg0 = arg0.ptr;
-  _emscripten_bind_WASMSim_set_a_1(self, arg0);
+  _emscripten_bind_WASMSim_set_max_iteration_1(self, arg0);
 };
     /** @suppress {checkTypes} */
-    Object.defineProperty(WASMSim.prototype, 'a', { get: WASMSim.prototype.get_a, set: WASMSim.prototype.set_a });
+    Object.defineProperty(WASMSim.prototype, 'max_iteration', { get: WASMSim.prototype.get_max_iteration, set: WASMSim.prototype.set_max_iteration });
   WASMSim.prototype['__destroy__'] = WASMSim.prototype.__destroy__ = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
   var self = this.ptr;
   _emscripten_bind_WASMSim___destroy___0(self);

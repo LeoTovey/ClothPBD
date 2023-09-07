@@ -67,6 +67,7 @@ inline void ImplicitSim<T>::Substep(T dt)
         x[i] = x_hat[i];
     }
 
+
     // iterate
     for (size_t n = 0; n < max_iteration; n++)
     {
@@ -124,3 +125,4 @@ template <typename T>
 inline void ImplicitSim<T>::Reset()
 {
 }
+
